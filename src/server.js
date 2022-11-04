@@ -4,6 +4,7 @@ const cors=require('cors')
 const app=express()
 connectToMongo()
 
+require('dotenv').config()
 //taking routes
 const auth=require('./routes/auth')
 const notes=require('./routes/notes')
@@ -17,6 +18,6 @@ app.get('/',(req,res)=>{
     res.send('hello world')
 })
 
-app.listen(5050,()=>{
+app.listen(process.env.PORT,()=>{
     console.log('server is running at http://localhost:5050/')
 })

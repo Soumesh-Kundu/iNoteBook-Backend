@@ -5,8 +5,8 @@ const { body, validationResult } = require('express-validator')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const fetchUser = require('../middleware/fetchUser')
-
-const JWT_SECRET = "helloiamSoumesh"
+require('dotenv').config()
+const JWT_SECRET = process.env.JWT_SECRET_TOKEN
 
 //Route: 1 =>
 //create user using: POST '/api/auth/createUser' no login require
@@ -16,6 +16,7 @@ router.post('/createUser', [
     body('password', 'Password must be more than 5 Characters').isLength({ min: 5 })
 ], async (req, res) => {
     //if there are errors then return bad requests and the errors
+    let success=false
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -25,7 +26,7 @@ router.post('/createUser', [
     try {
         let user = await User.findOne({ email: req.body.email })
         if (user) {
-            return res.status(400).json({ error: "Sorry but this user already Exists" })
+            return res.status(400).json({success, error: "Sorry but this user already Exists" })
         }
         const salt = await bcrypt.genSalt(10)
         const secPass = await bcrypt.hash(req.body.password, salt)
@@ -41,7 +42,8 @@ router.post('/createUser', [
             }
         }
         const authToken = jwt.sign(data, JWT_SECRET)
-        res.status(200).json({ authToken })
+        success=true
+        res.status(200).json({success, authToken })
     }
     catch (err) {
         console.error(err)
@@ -76,6 +78,7 @@ router.post('/login', [
                 id: user.id
             }
         }
+        success=true
         const authToken = jwt.sign(data, JWT_SECRET)
         res.status(200).json({ success,authToken })
     }
